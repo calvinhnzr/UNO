@@ -1,0 +1,53 @@
+version: "3.8"
+services:
+  # frontend:
+  #   build: /frontend
+  #   ports:
+  #     - "3001:80"
+  #   volumes:
+  #     - ./frontend:/frontend
+  game_service:
+    build: ./backend/game_service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/game_service:/backend/game_service
+    depends_on:
+      - rabbitmq
+  card_service:
+    build: ./backend/card_service
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./backend/card_service:/backend/card_service
+    depends_on:
+      - rabbitmq
+  player_service:
+    build: ./backend/player_service
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/player_service:/backend/player_service
+    depends_on:
+      - rabbitmq
+  auth_service:
+    build: ./backend/authentication_service
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./backend/auth_service:/backend/auth_service
+    depends_on:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  mongo:
+    image: "mongo"
+    ports:
+      - "27017:27017"
+    volumes:
+      - "mongodb:/data/db"
+volumes:
+  mongodb:
