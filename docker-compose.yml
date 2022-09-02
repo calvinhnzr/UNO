@@ -2,10 +2,14 @@ version: "3.8"
 services:
     frontend:
         build: ./frontend
+        container_name: frontend
         ports:
             - "3000:3000"
         volumes:
-            - ./frontend:/frontend
+            - ./frontend:/app
+            - ./app/node_modules
+        stdin_open: true
+        tty: true
     game_service:
         build: ./backend/game_service
         ports:
