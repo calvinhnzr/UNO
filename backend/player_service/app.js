@@ -1,5 +1,5 @@
-const express = require("express")
-const amqp = require("amqplib")
+import express from "express"
+import amqplib from "amqplib"
 
 const app = express()
 
@@ -10,9 +10,9 @@ app.use(express.json())
 // TODO: AMQP (RabbitMQ) connection
 
 app.get("/", (req, res) => {
-	res.send("player_service")
+  res.send("player_service")
 })
 
 app.listen(PORT, () => {
-	console.log(`player_service listening on port ${PORT}!`)
+  console.log(`player_service listening on port ${PORT}!`)
 })

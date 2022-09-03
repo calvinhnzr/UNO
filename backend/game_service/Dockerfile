@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16.17.0
 
 # Create app directory
 WORKDIR /backend
