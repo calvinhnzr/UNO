@@ -4,13 +4,19 @@ import cors from "cors"
 import { nanoid } from "nanoid"
 import { createServer } from "http"
 import { Server } from "socket.io"
+import { instrument } from "@socket.io/admin-ui"
 
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
+    credentials: true,
   },
+})
+
+instrument(io, {
+  auth: false,
 })
 
 app.use(cors())
@@ -20,7 +26,7 @@ const games = []
 
 class Game {
   constructor() {
-    this.id = nanoid(10)
+    this.id = nanoid(5)
     this.players = []
   }
 
@@ -39,10 +45,28 @@ class Game {
 
 class Player {
   constructor(name) {
-    this.id = nanoid(10)
+    this.id = nanoid(5)
     this.name = name
   }
 }
+
+app.get("/", (req, res) => {
+  res.send("game_service")
+})
+
+app.get("/api/game", (req, res) => {
+  res.json(games)
+})
+
+app.get("/api/game/:id", (req, res) => {
+  const game = games.find((g) => g.id === req.params.id)
+
+  if (game) {
+    res.json(game)
+  } else {
+    res.status(404).end()
+  }
+})
 
 app.post("/api/game", (req, res) => {
   const name = req.body.name || "Anonymous"
@@ -59,4 +83,10 @@ app.post("/api/game", (req, res) => {
 const PORT = process.env.PORT || 8000
 httpServer.listen(PORT, () => {
   console.log(`game_service listening on port ${PORT}!`)
+})
+
+io.on("connection", (socket) => {
+  socket.on("ping", (data) => {
+    socket.emit("pong", "yo")
+  })
 })
