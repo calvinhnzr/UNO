@@ -1,12 +1,11 @@
-import "./styles/App.css"
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
+
+import "./styles/App.css"
 
 import Login from "./routes/Login"
 import AllGames from "./routes/AllGames"
 import Game from "./routes/Game"
 import NotFound from "./routes/NotFound"
-
-function MyGame() {}
 
 function App() {
   return (
