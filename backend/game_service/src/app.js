@@ -12,6 +12,7 @@ const io = new Server(httpServer, {
     origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
+    transports: ["websocket"],
   },
 })
 
@@ -86,7 +87,10 @@ httpServer.listen(PORT, () => {
 })
 
 io.on("connection", (socket) => {
-  socket.on("ping", (data) => {
-    socket.emit("pong", "yo")
+  console.log("Client connected: " + socket.id)
+
+  socket.on("ping", () => {
+    console.log("ping received")
+    socket.emit("pong", "test")
   })
 })
