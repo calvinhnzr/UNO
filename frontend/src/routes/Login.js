@@ -1,15 +1,24 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 import Layout from "../components/styled/Layout"
 import Title from "../components/styled/Title"
 import Form from "../components/styled/Form"
 
+import { fetchPOST } from "../helpers/fetchData.js"
+
 const Login = () => {
   const [username, setUsername] = useState("")
+  const navigate = useNavigate()
+  const url = "http://localhost:8000/api/game"
 
-  function submitHandler(e) {
+  async function submitHandler(e) {
     e.preventDefault()
-    console.log(username)
+    const body = {
+      name: username,
+    }
+    const data = await fetchPOST(url, body)
+    navigate(`/game/${data.id}`)
   }
 
   return (

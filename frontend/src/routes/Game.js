@@ -1,7 +1,8 @@
 import React from "react"
-
-const Game = () => {
-  return <div>Game</div>
+import { useParams } from "react-router-dom"
+const Game = (props) => {
+  const { id } = useParams()
+  return <div>My Game {id}</div>
 }
 
 export default Game
