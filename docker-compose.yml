@@ -20,15 +20,15 @@ services:
       - ./backend/game_service:/usr/src/app/game_service/src
     depends_on:
       - rabbitmq
-  card_service:
-    container_name: card_service
+  rule_service:
+    container_name: rule_service
     build:
-      context: ./backend/card_service
+      context: ./backend/rule_service
       dockerfile: Dockerfile.dev
     ports:
       - "8002:8002"
     volumes:
-      - ./backend/card_service:/usr/src/app/card_service/src
+      - ./backend/rule_service:/usr/src/app/rule_service/src
     depends_on:
       - rabbitmq
   player_service:

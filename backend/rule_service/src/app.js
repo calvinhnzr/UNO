@@ -4,13 +4,13 @@ dotenv.config()
 import express from "express"
 const app = express()
 import cors from "cors"
-import { nanoid } from "nanoid"
 
 import { createServer } from "http"
 import { Server } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 
 import { connect, sendRabbitMessage } from "./rabbit.js"
+import { send } from "process"
 
 // socket.io setup
 // #####################################
@@ -41,41 +41,20 @@ async function start() {
   await connect()
 }
 
-// data
-// #####################################
-
-const players = []
-
-class Player {
-  constructor(name) {
-    this.id = nanoid(5)
-    this.name = name
-  }
-}
-
 // express routes
 // #####################################
 
 app.get("/", (req, res) => {
-  sendRabbitMessage("player_service", "Hello from the backend!")
-  res.send("player_service")
-})
-
-app.post("/api/player", (req, res) => {
-  const name = req.body.name || "Anonymous"
-
-  const player = new Player(name)
-  players.push(player)
-
-  res.json(player)
+  sendRabbitMessage("rule_service", "Hello from the rule_service!")
+  res.send("rule_service")
 })
 
 // express server start
 // #####################################
 
-const PORT = process.env.PORT || 8001
+const PORT = process.env.PORT || 8002
 app.listen(PORT, () => {
-  console.log(`player_service listening on port ${PORT}!`)
+  console.log(`rule_service listening on port ${PORT}!`)
 })
 
 // socket.io events
@@ -86,6 +65,6 @@ io.on("connection", (socket) => {
 
   socket.on("ping", () => {
     console.log("ping received")
-    socket.emit("pong", "player_service")
+    socket.emit("pong", "rule_service")
   })
 })
