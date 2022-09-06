@@ -1,35 +1,64 @@
 import * as dotenv from "dotenv"
 dotenv.config()
+
 import amqp from "amqplib"
 
-let channel
-let connection
+const amqpUser = process.env.AMQP_USER
+const amqpPassword = process.env.AMQP_PASSWORD
+const amqpHost = process.env.AMQP_HOST
+const amqpPort = process.env.AMQP_PORT
+const amqpUrl = `amqp://${amqpUser}:${amqpPassword}@${amqpHost}:${amqpPort}`
 
-const amqpUrl = process.env.AMQP_URL
+// RabbitMQ/amqplib code with added modifications from:
+// https://github.com/FantasyGao/About_Node/tree/b5ef98f50a754034e2bdeeee66c4d2a36fc27d26/ES6Rabbit
 
-async function connect() {
+// init
+async function init(queue) {
   try {
-    connection = await amqp.connect(amqpUrl)
-    channel = await connection.createChannel()
+    let connection = await amqp.connect(amqpUrl)
 
-    await channel.assertQueue("authentication_service", { durable: false })
-  } catch (err) {
-    console.log(err)
+    connection.on("error", function (err) {
+      console.log(err)
+      setTimeout(init, 10000, queue)
+    })
+
+    connection.on("close", function () {
+      console.error("connection to RabbitQM closed!")
+      setTimeout(init, 10000, queue)
+    })
+
+    let channel = await connection.createChannel()
+    await channel.assertQueue(queue, { durable: true })
+    return channel
+  } catch (e) {
+    console.error("init error!")
+    process.exit(1)
   }
-
-  channel.consume(
-    "authentication_service",
-    (msg) => {
-      const data = msg.content.toString()
-      console.log(" [x] Received %s", data)
-      channel.ack(msg)
-    },
-    { noAck: false }
-  )
 }
 
-function sendRabbitMessage(queue, msg) {
-  channel.sendToQueue(queue, Buffer.from(msg))
+// publisher
+async function emitEvent(queue, msg) {
+  const channel = await init(queue)
+  await channel.sendToQueue(queue, Buffer.from(msg), {
+    persistent: true,
+  })
 }
 
-export { connect, sendRabbitMessage }
+// consumer
+async function onEvent(queue, callback) {
+  try {
+    const chan = await init(queue)
+    await chan.consume(
+      queue,
+      function (msg) {
+        chan.ack(msg)
+        callback(msg.content.toString())
+      },
+      { noAck: false }
+    )
+  } catch (e) {
+    callback(String(e))
+  }
+}
+
+export { emitEvent, onEvent }

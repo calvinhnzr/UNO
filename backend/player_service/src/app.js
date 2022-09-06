@@ -10,7 +10,7 @@ import { createServer } from "http"
 import { Server } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 
-import { connect, sendRabbitMessage } from "./rabbit.js"
+import { emitEvent, onEvent } from "./rabbit.js"
 
 // socket.io setup
 // #####################################
@@ -33,13 +33,20 @@ instrument(io, {
 app.use(cors())
 app.use(express.json())
 
-// amqp (rabbitmq) connection
+// amqp (rabbitmq) event handling
 // #####################################
 
-start()
-async function start() {
-  await connect()
-}
+const q = "testEvent"
+emitEvent(q, JSON.stringify({ id: nanoid(5), name: "testUser" }))
+
+setInterval(() => {
+  console.info(" [x] Sending event...")
+  emitEvent(q, JSON.stringify({ id: nanoid(5), name: "testUser" }))
+}, 3000)
+
+onEvent(q, (msg) => {
+  console.log(" [x] Received event: ", q, JSON.parse(msg))
+})
 
 // data
 // #####################################
@@ -57,7 +64,6 @@ class Player {
 // #####################################
 
 app.get("/", (req, res) => {
-  sendRabbitMessage("player_service", "Hello from the backend!")
   res.send("player_service")
 })
 
@@ -73,7 +79,8 @@ app.post("/api/player", (req, res) => {
 // express server start
 // #####################################
 
-const PORT = process.env.PORT || 8001
+// const PORT = process.env.PORT || 8001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`player_service listening on port ${PORT}!`)
 })

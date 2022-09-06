@@ -10,7 +10,7 @@ import { createServer } from "http"
 import { Server } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 
-import { connect, sendRabbitMessage } from "./rabbit.js"
+import { emitEvent, onEvent } from "./rabbit.js"
 
 // socket.io setup
 // #####################################
@@ -19,10 +19,6 @@ const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: {
     origin: ["http://localhost:3000", "https://admin.socket.io"],
-<<<<<<< HEAD
-=======
-    credentials: true,
->>>>>>> 2e2c1433fbd146bb373a9a14eab2c5520890b388
   },
 })
 
@@ -37,13 +33,20 @@ instrument(io, {
 app.use(cors())
 app.use(express.json())
 
-// amqp (rabbitmq) connection
+// amqp (rabbitmq) event handling
 // #####################################
 
-start()
-async function start() {
-  await connect()
-}
+const q = "testEvent"
+emitEvent(q, JSON.stringify({ id: nanoid(5), name: "testUser" }))
+
+setInterval(() => {
+  console.info(" [x] Sending event...")
+  emitEvent(q, JSON.stringify({ id: nanoid(5), name: "testUser" }))
+}, 3000)
+
+onEvent(q, (msg) => {
+  console.log(" [x] Received event: ", q, JSON.parse(msg))
+})
 
 // data
 // #####################################
@@ -80,7 +83,6 @@ class Player {
 // #####################################
 
 app.get("/", (req, res) => {
-  sendRabbitMessage("userCreated", "Hello from game_service")
   res.send("game_service")
 })
 

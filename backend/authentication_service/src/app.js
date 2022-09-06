@@ -7,7 +7,7 @@ import cors from "cors"
 
 import jwt from "jsonwebtoken"
 
-import { connect, sendRabbitMessage } from "./rabbit.js"
+import { emitEvent, onEvent } from "./rabbit.js"
 
 // express middleware
 // #####################################
@@ -18,19 +18,22 @@ app.use(express.json())
 // amqp (rabbitmq) connection
 // #####################################
 
-start()
-async function start() {
-  await connect()
-}
+const q = "testEvent"
+emitEvent(q, JSON.stringify({ id: 12345, name: "testUser" }))
+
+setInterval(() => {
+  console.info(" [x] Sending event...")
+  emitEvent(q, JSON.stringify({ id: 12345, name: "testUser" }))
+}, 3000)
+
+onEvent(q, (msg) => {
+  console.log(" [x] Received event: ", q, JSON.parse(msg))
+})
 
 // express routes
 // #####################################
 
 app.get("/", (req, res) => {
-  sendRabbitMessage(
-    "authentication_service",
-    "hello from authentication_service"
-  )
   res.send("authentication_service")
 })
 
