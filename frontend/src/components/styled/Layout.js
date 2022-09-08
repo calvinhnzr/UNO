@@ -5,8 +5,9 @@ const Layout = styled.main`
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(6, 1fr);
   gap: 1rem;
-  max-width: 1280px;
+  max-width: 720px;
   margin: 0 auto;
+  outline: 1px solid red;
 `
 
 export default Layout
