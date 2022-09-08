@@ -5,46 +5,15 @@ import express from "express"
 const app = express()
 import cors from "cors"
 
-import jackrabbit from "@pager/jackrabbit"
-
 // helpers
 import { generateToken } from "./helpers/token.js"
+import { initRabbit, publishMessage, rabbit, queue } from "./helpers/rabbit.js"
 
-// express middleware
-// #####################################
+// rabbitmq connection
 
-app.use(cors())
-app.use(express.json())
+initRabbit()
 
-// amqp (rabbitmq) connection
-// #####################################
-
-const rabbit = jackrabbit(process.env.AMQP_URL)
-const exchange = rabbit.default()
-const queue = exchange.queue({ name: "task_queue", durable: false })
-const unpublishedMessages = []
-
-rabbit.on("connected", () => {
-  console.log("[AMQP] RabbitMQ connection established")
-
-  consumeMessages()
-})
-
-rabbit.on("reconnected", () => {
-  console.log("[AMQP] RabbitMQ connection re-established")
-
-  if (unpublishedMessages.length > 0) {
-    unpublishedMessages.forEach((message) => {
-      console.log("[AMQP] Publishing offline message")
-      publishMessage(message)
-    })
-    unpublishedMessages.length = 0
-  }
-
-  consumeMessages()
-})
-
-const consumeMessages = () => {
+export const consumeMessages = () => {
   queue.consume((message, ack, nack) => {
     // ADD CUSTOM EVENTS BELOW
     if (message.event === "newPlayer") {
@@ -67,18 +36,12 @@ const consumeMessages = () => {
   })
 }
 
-const publishMessage = (message) => {
-  if (rabbit.isConnectionReady()) {
-    console.log("[AMQP] Publishing message", message)
-    exchange.publish(message, { key: "task_queue" })
-  } else {
-    console.log("[AMQP] RabbitMQ not connected, saving message for later")
-    unpublishedMessages.push(message)
-  }
-}
+// middleware
 
-// express routes
-// #####################################
+app.use(cors())
+app.use(express.json())
+
+// routes
 
 app.get("/", (req, res) => {
   publishMessage({
@@ -89,8 +52,7 @@ app.get("/", (req, res) => {
   res.send("authentication_service")
 })
 
-// express server start
-// #####################################
+// server start
 
 const PORT = process.env.PORT || 8003
 app.listen(PORT, () => {

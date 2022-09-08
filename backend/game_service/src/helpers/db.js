@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid"
+
 export const games = []
 
 export class Game {

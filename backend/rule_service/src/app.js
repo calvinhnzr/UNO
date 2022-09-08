@@ -5,62 +5,18 @@ import express from "express"
 const app = express()
 import cors from "cors"
 
-import { createServer } from "http"
-import { Server } from "socket.io"
-import { instrument } from "@socket.io/admin-ui"
+// helpers
+import { initRabbit, publishMessage, rabbit, queue } from "./helpers/rabbit.js"
 
-import jackrabbit from "@pager/jackrabbit"
+// socketio
+import { initSocketIO } from "./helpers/socketio.js"
+const httpServer = initSocketIO(app)
 
-// socket.io setup
-// #####################################
+// rabbitmq connection
 
-const httpServer = createServer(app)
-const io = new Server(httpServer, {
-  cors: {
-    origin: ["http://localhost:3000", "https://admin.socket.io"],
-  },
-})
+initRabbit()
 
-// admin ui
-instrument(io, {
-  auth: false,
-})
-
-// express middleware
-// #####################################
-
-app.use(cors())
-app.use(express.json())
-
-// amqp (rabbitmq) event handling
-// #####################################
-
-const rabbit = jackrabbit(process.env.AMQP_URL)
-const exchange = rabbit.default()
-const queue = exchange.queue({ name: "task_queue", durable: false })
-const unpublishedMessages = []
-
-rabbit.on("connected", () => {
-  console.log("[AMQP] RabbitMQ connection established")
-
-  consumeMessages()
-})
-
-rabbit.on("reconnected", () => {
-  console.log("[AMQP] RabbitMQ connection re-established")
-
-  if (unpublishedMessages.length > 0) {
-    unpublishedMessages.forEach((message) => {
-      console.log("[AMQP] Publishing offline message")
-      publishMessage(message)
-    })
-    unpublishedMessages.length = 0
-  }
-
-  consumeMessages()
-})
-
-const consumeMessages = () => {
+export const consumeMessages = () => {
   queue.consume((message, ack, nack) => {
     // ADD CUSTOM EVENTS BELOW
     if (message.event === "test") {
@@ -73,18 +29,12 @@ const consumeMessages = () => {
   })
 }
 
-const publishMessage = (message) => {
-  if (rabbit.isConnectionReady()) {
-    console.log("[AMQP] Publishing message", message)
-    exchange.publish(message, { key: "task_queue" })
-  } else {
-    console.log("[AMQP] RabbitMQ not connected, saving message for later")
-    unpublishedMessages.push(message)
-  }
-}
+// middleware
 
-// express routes
-// #####################################
+app.use(cors())
+app.use(express.json())
+
+// routes
 
 app.get("/", (req, res) => {
   publishMessage({
@@ -95,22 +45,9 @@ app.get("/", (req, res) => {
   res.send("rule_service")
 })
 
-// express server start
-// #####################################
+// server start
 
 const PORT = process.env.PORT || 8002
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`rule_service listening on port ${PORT}!`)
-})
-
-// socket.io events
-// #####################################
-
-io.on("connection", (socket) => {
-  console.log("Client connected: " + socket.id)
-
-  socket.on("ping", () => {
-    console.log("ping received")
-    socket.emit("pong", "rule_service")
-  })
 })
