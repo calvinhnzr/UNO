@@ -10,7 +10,10 @@ import { createServer } from "http"
 import { Server } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 
-import { emitEvent, onEvent } from "./rabbit.js"
+import jackrabbit from "@pager/jackrabbit"
+
+// helpers
+import { games, Game } from "./helpers/db.js"
 
 // socket.io setup
 // #####################################
@@ -36,46 +39,51 @@ app.use(express.json())
 // amqp (rabbitmq) event handling
 // #####################################
 
-const q = "testEvent"
-emitEvent(q, JSON.stringify({ id: nanoid(5), name: "testUser" }))
+const rabbit = jackrabbit(process.env.AMQP_URL)
+const exchange = rabbit.default()
+const queue = exchange.queue({ name: "task_queue", durable: false })
+const unpublishedMessages = []
 
-setInterval(() => {
-  console.info(" [x] Sending event...")
-  emitEvent(q, JSON.stringify({ id: nanoid(5), name: "testUser" }))
-}, 3000)
+rabbit.on("connected", () => {
+  console.log("[AMQP] RabbitMQ connection established")
 
-onEvent(q, (msg) => {
-  console.log(" [x] Received event: ", q, JSON.parse(msg))
+  consumeMessages()
 })
 
-// data
-// #####################################
+rabbit.on("reconnected", () => {
+  console.log("[AMQP] RabbitMQ connection re-established")
 
-const games = []
-
-class Game {
-  constructor() {
-    this.id = nanoid(5)
-    this.players = []
+  if (unpublishedMessages.length > 0) {
+    unpublishedMessages.forEach((message) => {
+      console.log("[AMQP] Publishing offline message")
+      publishMessage(message)
+    })
+    unpublishedMessages.length = 0
   }
 
-  addPlayer(player) {
-    this.players.push(player)
-  }
+  consumeMessages()
+})
 
-  removePlayer(player) {
-    this.players = this.players.filter((p) => p.id !== player.id)
-  }
-
-  getPlayers() {
-    return this.players
-  }
+const consumeMessages = () => {
+  queue.consume((message, ack, nack) => {
+    // ADD CUSTOM EVENTS BELOW
+    if (message.event === "test") {
+      console.log("[AMQP] Message received", message)
+      ack()
+      return
+    }
+    nack()
+    return
+  })
 }
 
-class Player {
-  constructor(name) {
-    this.id = nanoid(5)
-    this.name = name
+const publishMessage = (message) => {
+  if (rabbit.isConnectionReady()) {
+    console.log("[AMQP] Publishing message", message)
+    exchange.publish(message, { key: "task_queue" })
+  } else {
+    console.log("[AMQP] RabbitMQ not connected, saving message for later")
+    unpublishedMessages.push(message)
   }
 }
 
@@ -83,6 +91,11 @@ class Player {
 // #####################################
 
 app.get("/", (req, res) => {
+  publishMessage({
+    event: "test",
+    payload: { message: "Hello from game_service" },
+  })
+
   res.send("game_service")
 })
 

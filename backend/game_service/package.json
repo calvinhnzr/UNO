@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "start:dev": "nodemon src/app.js --exitcrash"
+    "start:dev": "nodemon src/app.js"
   },
   "type": "module",
   "keywords": [],
@@ -13,12 +13,12 @@
   "license": "ISC",
   "dependencies": {
     "@socket.io/admin-ui": "^0.4.0",
-    "amqplib": "^0.10.3",
     "cors": "^2.8.5",
     "express": "^4.18.1",
     "nanoid": "^4.0.0",
     "socket.io": "^4.5.2",
-    "dotenv": "^16.0.2"
+    "dotenv": "^16.0.2",
+    "@pager/jackrabbit": "^5.4.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.19"

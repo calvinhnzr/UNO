@@ -5,9 +5,10 @@ import express from "express"
 const app = express()
 import cors from "cors"
 
-import jwt from "jsonwebtoken"
+import jackrabbit from "@pager/jackrabbit"
 
-import { emitEvent, onEvent } from "./rabbit.js"
+// helpers
+import { generateToken } from "./helpers/token.js"
 
 // express middleware
 // #####################################
@@ -18,22 +19,73 @@ app.use(express.json())
 // amqp (rabbitmq) connection
 // #####################################
 
-const q = "testEvent"
-emitEvent(q, JSON.stringify({ id: 12345, name: "testUser" }))
+const rabbit = jackrabbit(process.env.AMQP_URL)
+const exchange = rabbit.default()
+const queue = exchange.queue({ name: "task_queue", durable: false })
+const unpublishedMessages = []
 
-setInterval(() => {
-  console.info(" [x] Sending event...")
-  emitEvent(q, JSON.stringify({ id: 12345, name: "testUser" }))
-}, 3000)
+rabbit.on("connected", () => {
+  console.log("[AMQP] RabbitMQ connection established")
 
-onEvent(q, (msg) => {
-  console.log(" [x] Received event: ", q, JSON.parse(msg))
+  consumeMessages()
 })
+
+rabbit.on("reconnected", () => {
+  console.log("[AMQP] RabbitMQ connection re-established")
+
+  if (unpublishedMessages.length > 0) {
+    unpublishedMessages.forEach((message) => {
+      console.log("[AMQP] Publishing offline message")
+      publishMessage(message)
+    })
+    unpublishedMessages.length = 0
+  }
+
+  consumeMessages()
+})
+
+const consumeMessages = () => {
+  queue.consume((message, ack, nack) => {
+    // ADD CUSTOM EVENTS BELOW
+    if (message.event === "newPlayer") {
+      console.log("[AMQP] Message received", message)
+      const token = generateToken(message.payload)
+
+      publishMessage({
+        event: "playerToken",
+        payload: {
+          token,
+          player: message.payload,
+        },
+      })
+
+      ack()
+      return
+    }
+    nack()
+    return
+  })
+}
+
+const publishMessage = (message) => {
+  if (rabbit.isConnectionReady()) {
+    console.log("[AMQP] Publishing message", message)
+    exchange.publish(message, { key: "task_queue" })
+  } else {
+    console.log("[AMQP] RabbitMQ not connected, saving message for later")
+    unpublishedMessages.push(message)
+  }
+}
 
 // express routes
 // #####################################
 
 app.get("/", (req, res) => {
+  publishMessage({
+    event: "test",
+    payload: { message: "Hello from authentication_service" },
+  })
+
   res.send("authentication_service")
 })
 
