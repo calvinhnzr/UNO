@@ -3,6 +3,9 @@ import { Server } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 import socketioJwt from "socketio-jwt"
 
+// helpers
+import { games } from "./db.js"
+
 export const initSocketIO = (app) => {
   const httpServer = createServer(app)
   const io = new Server(httpServer, {
@@ -38,15 +41,38 @@ export const startSocketIO = (io) => {
         socket.decoded_token.name
     )
 
-    socket.on("join_room", (room, callback) => {
-      socket.join(room)
-      callback(`Joined Room: ${room}`)
+    socket.on("join_room", (room) => {
+      const game = games.find((game) => game.id === room)
+
+      if (game) {
+        const player = game.players.find((player) => player.id === socket.decoded_token.id)
+
+        if (!player) {
+          game.players.push({ id: socket.decoded_token.id, name: socket.decoded_token.name })
+
+          socket.join(room)
+
+          io.to(room).emit("player_joined", game.players)
+        }
+      }
+    })
+
+    socket.on("disconnect", () => {
+      console.log("Client disconnected: " + socket.id)
+
+      const game = games.find((game) => game.players.find((player) => player.id === socket.decoded_token.id))
+
+      if (game) {
+        const player = game.players.find((player) => player.id === socket.decoded_token.id)
+
+        if (player) {
+          game.players = game.players.filter((player) => player.id !== socket.decoded_token.id)
+          socket.to(game.id).emit("player_left", game.players)
+        }
+      }
     })
 
     socket.on("send_message_room", (data) => {
-      console.log("data in send_message_room", data)
-      console.log("data.room in send_message_room", data.room)
-      socket.to(data.room)
       socket.to(data.room).emit("receive_message_room", data)
     })
 

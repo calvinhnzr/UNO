@@ -6,46 +6,47 @@ import io from "socket.io-client"
 import Layout from "../components/styled/Layout"
 import Container from "../components/styled/Container"
 
-const socket = io.connect(`http://localhost:8000`, { query: `token=${localStorage.getItem("token")}` })
+// const socket = io.connect(`http://localhost:8000`, { query: `token=OlUJn` })
+const socket = io.connect(`http://localhost:8000`)
+// let socket
 
-const Game = (props) => {
+const Game = () => {
   const { user, setUser } = useContext(UserContext)
 
   const [room, setRoom] = useState("")
+
   const [message, setMessage] = useState("")
   const [messageReceived, setmessageReceived] = useState("")
 
-  const sendMessage = () => {
-    socket.emit("send_message", { message })
-  }
+  const [joinedPlayers, setJoinedPlayers] = useState()
 
   const sendMessageRoom = () => {
     socket.emit("send_message_room", { message, room })
   }
 
-  const joinRoom = () => {
-    if (room !== "") {
-      socket.emit("join_room", user.gameId, (message) => {
-        console.log(message)
-      })
-    }
-  }
-
   useEffect(() => {
     socket.io.opts.query = `token=${localStorage.getItem("token")}`
     socket.connect()
+    // socket = io.connect(`http://localhost:8000`, {
+    //   query: `token=${localStorage.getItem("token")}`,
+    // })
 
     setRoom(user.gameId)
-    socket.on("receive_message", (data) => {
-      setmessageReceived(data.message)
+
+    socket.emit("join_room", user.gameId)
+
+    socket.on("player_joined", (data) => {
+      console.log("A Player joined")
+      setJoinedPlayers(data)
     })
 
     socket.on("receive_message_room", (data) => {
       setmessageReceived(data.message)
     })
 
-    socket.emit("join_room", user.gameId, (message) => {
-      console.log(message)
+    socket.on("player_left", (data) => {
+      console.log("A Player left")
+      setJoinedPlayers(data)
     })
   }, [socket])
 
@@ -57,13 +58,17 @@ const Game = (props) => {
 
       <Container>
         <input placeholder="Message" onChange={(e) => setMessage(e.target.value)} />
-        <input placeholder="Room" onChange={(e) => setRoom(e.target.value)} />
-        <button onClick={sendMessage}>Send Message as Broadcast</button>
-        <br />
-        <button onClick={joinRoom}>Join Room</button>
         <button onClick={sendMessageRoom}>Send Message to Room</button>
+      </Container>
+
+      <Container>
         <h1>Message: </h1>
         {messageReceived}
+      </Container>
+
+      <Container>
+        <h2>Players:</h2>
+        {joinedPlayers ? joinedPlayers.map((value, index) => <p key={index}>{value.name}</p>) : ""}
       </Container>
     </Layout>
   )

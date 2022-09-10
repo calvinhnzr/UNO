@@ -37,7 +37,7 @@ const Dashbaord = () => {
   }
 
   async function handleNewGame(token) {
-    console.log("new game")
+    // console.log("new game")
     const response = await fetch(URL, {
       method: "POST",
       headers: {
@@ -46,12 +46,12 @@ const Dashbaord = () => {
       },
     })
     const data = await response.json()
-    console.log(data)
+    // console.log(data)
     saveToStorage("gameId", data.id)
 
     user.gameId = data.id
     setUser({ ...user })
-    console.log(user)
+    // console.log(user)
     navigate(user.gameId ? `/game/${user.gameId}` : "/")
   }
 
@@ -61,7 +61,7 @@ const Dashbaord = () => {
         <Title>User: {user.name}</Title>
         <p>User ID: {user.id}</p>
         <p>Game ID: {user.gameId}</p>
-        <button onClick={() => console.log(user.id ? user : user)}>Get State</button>
+        <button onClick={() => console.log(user)}>Get State</button>
         <button onClick={() => (localStorage.clear(), navigate("/", { replace: true }))}>Clear localStorage</button>
         <button onClick={() => handleNewGame(user.token)}>new Game</button>
         <label>

@@ -54,11 +54,11 @@ app.get("/api/game", (req, res) => {
 app.put("/api/game/:id", authenticateToken, (req, res) => {
   const game = games.find((game) => game.id === req.params.id)
 
-  const playerId = req.user.id
-  const playerName = req.user.name
+  // const playerId = req.user.id
+  // const playerName = req.user.name
 
   if (game) {
-    game.players.push({ id: playerId, name: playerName })
+    // game.players.push({ id: playerId, name: playerName })
 
     return res.json(game)
   } else {
@@ -67,11 +67,11 @@ app.put("/api/game/:id", authenticateToken, (req, res) => {
 })
 
 app.post("/api/game", authenticateToken, (req, res) => {
-  const playerId = req.user.id
-  const playerName = req.user.name || "Anonymous"
+  // const playerId = req.user.id
+  // const playerName = req.user.name || "Anonymous"
   const game = new Game()
 
-  game.addPlayer({ id: playerId, name: playerName })
+  // game.addPlayer({ id: playerId, name: playerName })
 
   games.push(game)
 
