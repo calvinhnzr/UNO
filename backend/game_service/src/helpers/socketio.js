@@ -1,6 +1,7 @@
 import { createServer } from "http"
 import { Server } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
+import socketioJwt from "socketio-jwt"
 
 export const initSocketIO = (app) => {
   const httpServer = createServer(app)
@@ -14,28 +15,28 @@ export const initSocketIO = (app) => {
     auth: false,
   })
 
+  io.use(
+    socketioJwt.authorize({
+      secret: process.env.JWT_SECRET,
+      handshake: true,
+    })
+  )
+
   startSocketIO(io)
 
   return httpServer
 }
 
 export const startSocketIO = (io) => {
-  // io.on("connection", (socket) => {
-  //   console.log("Client connected: " + socket.id)
-
-  //   socket.on("ping", (message) => {
-  //     // console.log("ping received", message)
-  //     socket.emit("pong", "game_service")
-  //   })
-  // })
-
   io.on("connection", (socket) => {
-    console.log("Client connected: " + socket.id)
-
-    // socket.on("ping", () => {
-    //   console.log("ping received")
-    //   socket.emit("pong", "test")
-    // })
+    console.log(
+      "Client connected: " +
+        socket.id +
+        " with playerId: " +
+        socket.decoded_token.id +
+        " and playerName: " +
+        socket.decoded_token.name
+    )
 
     socket.on("join_room", (room, callback) => {
       socket.join(room)
@@ -43,18 +44,15 @@ export const startSocketIO = (io) => {
     })
 
     socket.on("send_message_room", (data) => {
-      console.log("A", data)
-      console.log("B", data.room)
+      console.log("data in send_message_room", data)
+      console.log("data.room in send_message_room", data.room)
       socket.to(data.room)
       socket.to(data.room).emit("receive_message_room", data)
     })
 
     socket.on("send_message", (data) => {
-      console.log(data)
+      console.log("data in send_message", data)
       socket.broadcast.emit("receive_message", data)
-      // socket.emit("receive_message", data)
     })
   })
-
-  // do other stuff
 }

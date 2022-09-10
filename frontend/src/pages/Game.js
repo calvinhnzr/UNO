@@ -6,7 +6,7 @@ import io from "socket.io-client"
 import Layout from "../components/styled/Layout"
 import Container from "../components/styled/Container"
 
-const socket = io(`http://localhost:8000`)
+const socket = io.connect(`http://localhost:8000`, { query: `token=${localStorage.getItem("token")}` })
 
 const Game = (props) => {
   const { user, setUser } = useContext(UserContext)
@@ -32,20 +32,21 @@ const Game = (props) => {
   }
 
   useEffect(() => {
+    socket.io.opts.query = `token=${localStorage.getItem("token")}`
+    socket.connect()
+
     setRoom(user.gameId)
     socket.on("receive_message", (data) => {
       setmessageReceived(data.message)
     })
+
     socket.on("receive_message_room", (data) => {
       setmessageReceived(data.message)
     })
+
     socket.emit("join_room", user.gameId, (message) => {
       console.log(message)
     })
-
-    // return () => {
-    //   cleanup
-    // }
   }, [socket])
 
   return (
