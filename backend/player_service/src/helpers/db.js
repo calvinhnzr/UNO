@@ -1,4 +1,5 @@
-import { nanoid } from "nanoid"
+import { customAlphabet } from "nanoid"
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 
 export const players = []
 

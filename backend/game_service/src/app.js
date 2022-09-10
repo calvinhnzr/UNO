@@ -8,6 +8,7 @@ import cors from "cors"
 // helpers
 import { games, Game } from "./helpers/db.js"
 import { initRabbit, publishMessage, rabbit, queue } from "./helpers/rabbit.js"
+import { authenticateToken } from "./helpers/authenticateToken.js"
 
 // socketio
 import { initSocketIO } from "./helpers/socketio.js"
@@ -50,22 +51,22 @@ app.get("/api/game", (req, res) => {
   res.json(games)
 })
 
-app.get("/api/game/:id", (req, res) => {
+app.get("/api/game/:id", authenticateToken, (req, res) => {
   const game = games.find((g) => g.id === req.params.id)
 
   if (game) {
     res.json(game)
   } else {
-    res.status(404).end()
+    res.status(404).json({ error: "Game not found" })
   }
 })
 
-app.post("/api/game", (req, res) => {
-  const name = req.body.name || "Anonymous"
+app.post("/api/game", authenticateToken, (req, res) => {
+  const playerId = req.user.id
+  const playerName = req.user.name || "Anonymous"
   const game = new Game()
-  const player = new Player(name)
 
-  game.addPlayer(player)
+  game.addPlayer({ id: playerId, name: playerName })
 
   games.push(game)
 
