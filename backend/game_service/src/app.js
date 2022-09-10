@@ -51,13 +51,18 @@ app.get("/api/game", (req, res) => {
   res.json(games)
 })
 
-app.get("/api/game/:id", authenticateToken, (req, res) => {
-  const game = games.find((g) => g.id === req.params.id)
+app.put("/api/game/:id", authenticateToken, (req, res) => {
+  const game = games.find((game) => game.id === req.params.id)
+
+  const playerId = req.user.id
+  const playerName = req.user.name
 
   if (game) {
-    res.json(game)
+    game.players.push({ id: playerId, name: playerName })
+
+    return res.json(game)
   } else {
-    res.status(404).json({ error: "Game not found" })
+    return res.status(404).json({ error: "Game not found" })
   }
 })
 
