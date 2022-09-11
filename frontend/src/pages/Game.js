@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { UserContext } from "../context/UserContext"
 import io from "socket.io-client"
 
@@ -11,6 +11,7 @@ const socket = io.connect(`http://localhost:8000`)
 // let socket
 
 const Game = () => {
+  const navigate = useNavigate()
   const { user, setUser } = useContext(UserContext)
 
   const [room, setRoom] = useState("")
@@ -22,6 +23,16 @@ const Game = () => {
 
   const sendMessageRoom = () => {
     socket.emit("send_message_room", { message, room })
+  }
+
+  const leaveGame = () => {
+    socket.emit("leave_room")
+
+    localStorage.clear("gameId")
+    user.gameId = ""
+    setUser({ ...user })
+
+    navigate("/")
   }
 
   useEffect(() => {
@@ -59,6 +70,10 @@ const Game = () => {
       <Container>
         <input placeholder="Message" onChange={(e) => setMessage(e.target.value)} />
         <button onClick={sendMessageRoom}>Send Message to Room</button>
+      </Container>
+
+      <Container>
+        <button onClick={leaveGame}>Leave Game</button>
       </Container>
 
       <Container>
