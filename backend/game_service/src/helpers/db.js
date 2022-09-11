@@ -7,6 +7,7 @@ export class Game {
   constructor() {
     this.id = nanoid(5)
     this.players = []
+    this.started = false
   }
 
   addPlayer(player) {

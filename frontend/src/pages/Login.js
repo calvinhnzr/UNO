@@ -10,7 +10,7 @@ import { saveToStorage } from "../helpers/saveToStorage"
 
 import { fetchPOST } from "../helpers/fetchData.js"
 
-import { UserContext } from "../context/UserContext"
+import { Context } from "../context/Context"
 
 const Login = () => {
   let navigate = useNavigate()
@@ -18,7 +18,7 @@ const Login = () => {
   const url = "http://localhost:8001/api/player"
 
   const [name, setName] = useState("")
-  const { user, setUser } = useContext(UserContext)
+  const { user, setUser } = useContext(Context)
 
   async function submitHandler(e) {
     e.preventDefault()

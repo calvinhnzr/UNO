@@ -52,6 +52,12 @@ app.get("/api/game", (req, res) => {
 })
 
 app.put("/api/game/:id", authenticateToken, (req, res) => {
+  // handle no json body
+  if (!req.body) {
+    res.status(400).json({ error: "No body" })
+    return
+  }
+
   const game = games.find((game) => game.id === req.params.id)
 
   // const playerId = req.user.id

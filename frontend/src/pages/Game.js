@@ -1,10 +1,12 @@
 import { useState, useEffect, useContext } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { UserContext } from "../context/UserContext"
+import { Context } from "../context/Context"
 import io from "socket.io-client"
 
 import Layout from "../components/styled/Layout"
 import Container from "../components/styled/Container"
+import RunningGame from "./RunningGame"
+import GameLobby from "./GameLobby"
 
 // const socket = io.connect(`http://localhost:8000`, { query: `token=OlUJn` })
 const socket = io.connect(`http://localhost:8000`)
@@ -12,80 +14,90 @@ const socket = io.connect(`http://localhost:8000`)
 
 const Game = () => {
   const navigate = useNavigate()
-  const { user, setUser } = useContext(UserContext)
+  const { user, setUser, game, setGame } = useContext(Context)
 
-  const [room, setRoom] = useState("")
-
-  const [message, setMessage] = useState("")
-  const [messageReceived, setmessageReceived] = useState("")
-
-  const [joinedPlayers, setJoinedPlayers] = useState()
-
-  const sendMessageRoom = () => {
-    socket.emit("send_message_room", { message, room })
+  function handleLeaveGame() {
+    console.log("Leave Game")
+    socket.emit("leave_game", game.id)
+    setGame({ id: "", joined: false, started: false, players: [""] })
+    navigate("/")
   }
 
-  const leaveGame = () => {
-    socket.emit("leave_room")
-
-    localStorage.clear("gameId")
-    user.gameId = ""
-    setUser({ ...user })
-
-    navigate("/")
+  function handleStartGame() {
+    console.log("Start Game")
+    socket.emit("start_game", game.id)
   }
 
   useEffect(() => {
     socket.io.opts.query = `token=${localStorage.getItem("token")}`
     socket.connect()
-    // socket = io.connect(`http://localhost:8000`, {
-    //   query: `token=${localStorage.getItem("token")}`,
-    // })
 
-    setRoom(user.gameId)
+    socket.emit("join_game", game.id)
 
-    socket.emit("join_room", user.gameId)
-
-    socket.on("player_joined", (data) => {
-      console.log("A Player joined")
-      setJoinedPlayers(data)
+    socket.on("player_joined", (players) => {
+      console.log(players)
+      game.players = players
+      setGame({ ...game })
     })
 
-    socket.on("receive_message_room", (data) => {
-      setmessageReceived(data.message)
+    socket.on("player_left", (players) => {
+      console.log(players)
+      game.players = players
+      setGame({ ...game })
     })
 
-    socket.on("player_left", (data) => {
-      console.log("A Player left")
-      setJoinedPlayers(data)
+    socket.on("disconnect_from_socket", (players) => {
+      console.log("disconnect_from_socket")
+      game.players = players
+      setGame({ ...game })
     })
+
+    socket.on("game_started", () => {
+      game.started = true
+      setGame({ ...game })
+    })
+
+    window.addEventListener("onbeforeunload", handleLeaveGame)
+    return () => {
+      console.log("unmounted")
+      socket.off("player_joined")
+      socket.off("player_left")
+      socket.off("game_started")
+
+      socket.on("disconnect", () => {
+        console.log("disconnected")
+        handleLeaveGame()
+      })
+      window.removeEventListener("onbeforeunload", handleLeaveGame)
+    }
   }, [socket])
 
   return (
-    <Layout>
-      <Container>
-        <h1>My Game: {user.gameId}</h1>
-      </Container>
-
-      <Container>
-        <input placeholder="Message" onChange={(e) => setMessage(e.target.value)} />
-        <button onClick={sendMessageRoom}>Send Message to Room</button>
-      </Container>
-
-      <Container>
-        <button onClick={leaveGame}>Leave Game</button>
-      </Container>
-
-      <Container>
-        <h1>Message: </h1>
-        {messageReceived}
-      </Container>
-
-      <Container>
-        <h2>Players:</h2>
-        {joinedPlayers ? joinedPlayers.map((value, index) => <p key={index}>{value.name}</p>) : ""}
-      </Container>
-    </Layout>
+    <>
+      {game.started ? (
+        <RunningGame>
+          <Container>
+            <h1>Running Game</h1>
+          </Container>
+        </RunningGame>
+      ) : (
+        <GameLobby>
+          <Container>
+            <h1>My Game: {game.id}</h1>
+          </Container>
+          <Container>
+            <button onClick={handleStartGame}>Start Game</button>
+            <button onClick={handleLeaveGame}>Leave Game</button>
+          </Container>
+          <Container>
+            <h2>Players:</h2>
+            {game.players.map((value, index) => (
+              <p key={index}>{value.name}</p>
+            ))}
+          </Container>
+        </GameLobby>
+      )}
+    </>
   )
 }
 

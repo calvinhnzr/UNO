@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react"
 import { useNavigate, Outlet } from "react-router-dom"
 
-import { UserContext } from "../context/UserContext"
+import { Context } from "../context/Context"
 
 import Layout from "../components/styled/Layout"
 import Container from "../components/styled/Container"
@@ -13,27 +13,29 @@ const URL = "http://localhost:8000/api/game"
 
 const Dashbaord = () => {
   const navigate = useNavigate()
-  const { user, setUser } = useContext(UserContext)
-  const [joinGame, setJoinGame] = useState("")
+  const { user, setUser, game, setGame } = useContext(Context)
+  const [gameId, setGameId] = useState("")
 
   async function handleJoinGame(token) {
-    console.log(joinGame)
-    // do something
-    const response = await fetch(`${URL}/${joinGame}`, {
+    const response = await fetch(`${URL}/${gameId}`, {
       method: "PUT",
       headers: {
         "Content-type": "application/json",
         Authorization: `Bearer ${token}`, // notice the Bearer before your token
       },
     })
-    const data = await response.json()
-    console.log(data)
-    saveToStorage("gameId", data.id)
 
-    user.gameId = data.id
-    setUser({ ...user })
-    console.log(user)
-    navigate(user.gameId ? `/game/${user.gameId}` : "/")
+    const data = await response.json()
+    game.joinedRoom = true
+    game.id = data.id
+    setGame({ ...game })
+    navigate(game.id ? `/game/${game.id}` : "/")
+
+    // saveToStorage("gameId", data.id)
+    // user.gameId = data.id
+    // setUser({ ...user })
+    // console.log(user)
+    // navigate(user.gameId ? `/game/${user.gameId}` : "/")
   }
 
   async function handleNewGame(token) {
@@ -46,13 +48,17 @@ const Dashbaord = () => {
       },
     })
     const data = await response.json()
-    // console.log(data)
-    saveToStorage("gameId", data.id)
+    game.joinedRoom = true
+    game.id = data.id
+    setGame({ ...game })
+    navigate(game.id ? `/game/${game.id}` : "/")
 
-    user.gameId = data.id
-    setUser({ ...user })
+    // Old:
+    // saveToStorage("gameId", data.id)
+    // user.gameId = data.id
+    // setUser({ ...user })
     // console.log(user)
-    navigate(user.gameId ? `/game/${user.gameId}` : "/")
+    // navigate(user.gameId ? `/game/${user.gameId}` : "/")
   }
 
   return (
@@ -66,7 +72,7 @@ const Dashbaord = () => {
         <button onClick={() => handleNewGame(user.token)}>new Game</button>
         <label>
           Join Game
-          <input type="text" value={joinGame} onChange={(e) => setJoinGame(e.target.value)} />
+          <input type="text" value={gameId} onChange={(e) => setGameId(e.target.value)} />
           <button onClick={() => handleJoinGame(user.token)}>Join Game</button>
         </label>
       </Container>

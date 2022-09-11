@@ -36,8 +36,8 @@ export const startSocketIO = (io) => {
       `Client connected: ${socket.id} with playerId: ${socket.decoded_token.id} and playerName: ${socket.decoded_token.name}`
     )
 
-    socket.on("join_room", (room) => {
-      const game = games.find((game) => game.id === room)
+    socket.on("join_game", (gameId) => {
+      const game = games.find((game) => game.id === gameId)
 
       if (game) {
         const player = game.players.find((player) => player.id === socket.decoded_token.id)
@@ -45,52 +45,70 @@ export const startSocketIO = (io) => {
         if (!player) {
           game.players.push({ id: socket.decoded_token.id, name: socket.decoded_token.name })
 
-          socket.join(room)
-
-          io.to(room).emit("player_joined", game.players)
-        } else {
-          socket.emit("player_already_joined")
+          socket.join(gameId)
         }
+
+        io.to(gameId).emit("player_joined", game.players)
       } else {
-        socket.emit("error", "Game not found")
+        console.log("Game not found")
       }
     })
 
-    socket.on("leave_room", (room) => {
-      const game = games.find((game) => game.players.find((player) => player.id === socket.decoded_token.id))
+    socket.on("leave_game", (gameId) => {
+      let game = games.find((game) => game.id === gameId)
 
       if (game) {
-        const player = game.players.find((player) => player.id === socket.decoded_token.id)
+        game.players = game.players.filter((player) => player.id !== socket.decoded_token.id)
 
-        if (player) {
-          game.players = game.players.filter((player) => player.id !== socket.decoded_token.id)
+        // io.in(socket.id).socketsLeave(gameId)
 
-          if (game.players.length === 0) {
-            games.splice(games.indexOf(game), 1)
-            console.log("Game removed: " + game.id)
-            console.log("All Games: " + games)
-          } else {
-            io.to(game.id).emit("player_left", game.players)
-            console.log("Player left:", socket.decoded_token.id, socket.decoded_token.name)
-          }
-
-          socket.leave(game.id)
-          console.log("Player " + player.name + " left room: " + game.id)
+        if (game.players.length === 0) {
+          games.splice(games.indexOf(game), 1)
         }
+
+        io.to(gameId).emit("player_left", game.players)
+      } else {
+        console.log("Game not found")
+      }
+      // socket.disconnect()
+    })
+
+    socket.on("start_game", (gameId) => {
+      const game = games.find((game) => game.id === gameId)
+
+      if (game) {
+        game.started = true
+
+        io.to(gameId).emit("game_started", game)
+      } else {
+        console.log("Game not found")
       }
     })
+
+    // socket.on("send_message_room", (data) => {
+    //   socket.to(data.room).emit("receive_message_room", data)
+    // })
+
+    // socket.on("send_message", (data) => {
+    //   console.log("data in send_message", data)
+    //   socket.broadcast.emit("receive_message", data)
+    // })
 
     socket.on("disconnect", () => {
       console.log("Client disconnected: " + socket.id)
-    })
 
-    socket.on("send_message_room", (data) => {
-      socket.to(data.room).emit("receive_message_room", data)
-    })
+      let game = games.find((game) => game.players.find((player) => player.id === socket.decoded_token.id))
+      console.log(game)
 
-    socket.on("send_message", (data) => {
-      console.log("data in send_message", data)
-      socket.broadcast.emit("receive_message", data)
+      game.players = game.players.filter((player) => player.id !== socket.decoded_token.id)
+
+      if (game.players.length === 0) {
+        games.splice(games.indexOf(game), 1)
+      }
+
+      io.to(game.id).emit("disconnect_from_socket", game.players)
+
+      socket.disconnect()
     })
   })
 }
