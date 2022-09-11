@@ -51,6 +51,20 @@ app.get("/api/game", (req, res) => {
   res.json(games)
 })
 
+// create new game
+app.post("/api/game", authenticateToken, (req, res) => {
+  // const playerId = req.user.id
+  // const playerName = req.user.name || "Anonymous"
+  const game = new Game()
+
+  // game.addPlayer({ id: playerId, name: playerName })
+
+  games.push(game)
+
+  res.json(game)
+})
+
+// join existing game
 app.put("/api/game/:id", authenticateToken, (req, res) => {
   // handle no json body
   if (!req.body) {
@@ -70,18 +84,6 @@ app.put("/api/game/:id", authenticateToken, (req, res) => {
   } else {
     return res.status(404).json({ error: "Game not found" })
   }
-})
-
-app.post("/api/game", authenticateToken, (req, res) => {
-  // const playerId = req.user.id
-  // const playerName = req.user.name || "Anonymous"
-  const game = new Game()
-
-  // game.addPlayer({ id: playerId, name: playerName })
-
-  games.push(game)
-
-  res.json(game)
 })
 
 // server start

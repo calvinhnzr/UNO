@@ -20,7 +20,7 @@ function App() {
   // saved in storage:
   const [user, setUser] = useState({ name: "", token: "", id: "", auth: false, gameId: "", hasStarted: false })
   // saved in state:
-  const [game, setGame] = useState({ id: "", joined: false, started: false, players: [""] })
+  const [game, setGame] = useState({ id: "", joined: false, started: false, players: [""], hand: [] })
 
   useEffect(() => {
     user.token = getFromStorage("token")

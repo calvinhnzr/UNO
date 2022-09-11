@@ -7,5 +7,8 @@ export class Player {
   constructor(name) {
     this.id = nanoid(5)
     this.name = name
+    this.score = 0
+    this.hand = []
+    this.game = null
   }
 }
