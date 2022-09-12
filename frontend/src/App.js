@@ -18,7 +18,7 @@ import NotFound from "./pages/NotFound"
 
 function App() {
   // saved in storage:
-  const [user, setUser] = useState({ name: "", token: "", id: "", auth: false, gameId: "", hasStarted: false })
+  const [user, setUser] = useState({ name: "", token: "", id: "", auth: false })
   // saved in state:
   const [game, setGame] = useState({ id: "", joined: false, started: false, players: [], hand: [] })
 

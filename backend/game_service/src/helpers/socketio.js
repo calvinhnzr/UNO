@@ -4,7 +4,7 @@ import { instrument } from "@socket.io/admin-ui"
 import socketioJwt from "socketio-jwt"
 
 // helpers
-import { games } from "./db.js"
+import { games, Deck } from "./db.js"
 
 export const initSocketIO = (app) => {
   const httpServer = createServer(app)
@@ -80,23 +80,36 @@ export const startSocketIO = (io) => {
       const game = games.find((game) => game.id === gameId)
 
       if (game) {
-        game.started = true
+        if (!game.started) {
+          game.started = true
 
-        // draw 7 cards for each player
-        game.players.forEach((player) => {
-          for (let i = 0; i < 7; i++) {
-            player.hand.push(game.deck.draw())
-          }
-        })
+          // draw 7 cards for each player
+          game.players.forEach((player) => {
+            for (let i = 0; i < 7; i++) {
+              player.hand.push(game.deck.draw())
+            }
+          })
 
-        // draw 1 card for the discard pile
-        game.discardPile.push(game.deck.draw())
+          // draw 1 card for the discard pile
+          game.discardPile.push(game.deck.draw())
 
-        io.to(gameId).emit("game_started", {
-          started: game.started,
-          deckSize: game.deck.size(),
-          discardPile: game.discardPile,
-        })
+          io.to(gameId).emit("game_started", {
+            started: game.started,
+          })
+
+          io.to(gameId).emit("deck_size_updated", game.deck.size())
+
+          io.to(gameId).emit("discard_pile_updated", {
+            card: game.discardPile[game.discardPile.length - 1],
+            size: game.discardPile.length,
+          })
+        } else {
+          console.log("Game already started")
+
+          io.to(gameId).emit("game_started", {
+            error: "Game already started",
+          })
+        }
 
         const allClients = io.sockets.adapter.rooms.get(gameId)
 
@@ -135,8 +148,69 @@ export const startSocketIO = (io) => {
 
             game.discardPile.push(card)
 
-            io.to(gameId).emit("card_played", { card, playerId: player.id, discardPile: game.discardPile })
+            // remove the hand from each player and add the size of the hand instead
+            const players = game.players.map((player) => {
+              const { hand, ...rest } = player
+              return { ...rest, handSize: hand.length }
+            })
+
+            // send updated hand to player who played the card
+            io.to(socket.id).emit("get_hands", { hand: player.hand, players })
+
+            io.to(gameId).emit("played_card", {
+              // card,
+              playerId: player.id,
+              players,
+            })
+
+            io.to(gameId).emit("deck_size_updated", game.deck.size())
+
+            io.to(gameId).emit("discard_pile_updated", {
+              card: game.discardPile[game.discardPile.length - 1],
+              size: game.discardPile.length,
+            })
           }
+        }
+      } else {
+        console.log("Game not found")
+      }
+    })
+
+    socket.on("draw_card", (gameId) => {
+      const game = games.find((game) => game.id === gameId)
+
+      if (game) {
+        const player = game.players.find((player) => player.id === socket.decoded_token.id)
+
+        if (player) {
+          // draw a card
+          if (game.deck.size() > 0) {
+            player.hand.push(game.deck.draw())
+          }
+
+          // check if the deck is empty
+          if (game.deck.size() === 0) {
+            const lastCard = game.discardPile.pop()
+            game.deck = new Deck(game.discardPile)
+            game.deck.shuffle()
+            game.discardPile = [lastCard]
+          }
+
+          // remove the hand from each player and add the size of the hand instead
+          const players = game.players.map((player) => {
+            const { hand, ...rest } = player
+            return { ...rest, handSize: hand.length }
+          })
+
+          // send updated hand to player who drew a card
+          io.to(socket.id).emit("get_hands", { hand: player.hand, players })
+
+          io.to(gameId).emit("deck_size_updated", game.deck.size())
+
+          io.to(gameId).emit("discard_pile_updated", {
+            card: game.discardPile[game.discardPile.length - 1],
+            size: game.discardPile.length,
+          })
         }
       } else {
         console.log("Game not found")

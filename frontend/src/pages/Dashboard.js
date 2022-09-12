@@ -25,11 +25,17 @@ const Dashbaord = () => {
       },
     })
 
+    // game.id, game.started ? return false : response
+
     const data = await response.json()
-    game.joinedRoom = true
-    game.id = data.id
-    setGame({ ...game })
-    navigate(game.id ? `/game/${game.id}` : "/")
+    if (!data.error) {
+      game.joinedRoom = true
+      game.id = data.id
+      setGame({ ...game })
+      navigate(game.id ? `/game/${game.id}` : "/")
+    } else {
+      console.log(data)
+    }
 
     // saveToStorage("gameId", data.id)
     // user.gameId = data.id

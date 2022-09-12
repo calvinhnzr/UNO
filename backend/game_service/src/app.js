@@ -80,6 +80,10 @@ app.put("/api/game/:id", authenticateToken, (req, res) => {
   if (game) {
     // game.players.push({ id: playerId, name: playerName })
 
+    if (game.started) {
+      return res.status(400).json({ error: "Game already started" })
+    }
+
     return res.json(game)
   } else {
     return res.status(404).json({ error: "Game not found" })

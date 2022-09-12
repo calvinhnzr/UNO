@@ -16,7 +16,7 @@ const Game = () => {
   const navigate = useNavigate()
   const { user, setUser, game, setGame } = useContext(Context)
   const [deckSize, setDeckSize] = useState(0)
-  const [discardPile, setDiscardPile] = useState([])
+  const [discardPile, setDiscardPile] = useState({ size: "", card: {} })
 
   function handleLeaveGame() {
     console.log("leave_game")
@@ -30,22 +30,14 @@ const Game = () => {
     socket.emit("start_game", game.id)
   }
 
-  function handleDrawCard(amount) {
-    // draw ${amount} card from DRAW PILE
-    socket.emit("draw_card", amount)
-    console.log("draw card")
+  function handleDrawCard() {
+    console.log("draw_card")
+    socket.emit("draw_card", game.id)
   }
 
   function handlePlayCard(card) {
-    // place one card to the DISCARD PILE
     console.log("play_card")
-
     socket.emit("play_card", card, game.id)
-    // id, name, currentHand
-  }
-
-  function handleCheckHand() {
-    //
   }
 
   useEffect(() => {
@@ -68,7 +60,17 @@ const Game = () => {
       setGame({ ...game })
     })
 
-    socket.on("receive_player_state")
+    socket.on("deck_size_updated", (size) => {
+      console.log("deck_size_updated")
+      setDeckSize(size)
+    })
+
+    socket.on("discard_pile_updated", (discardPile) => {
+      console.log("discard_pile_updated")
+      discardPile.size = discardPile.size
+      discardPile.card = discardPile.card
+      setDiscardPile({ ...discardPile })
+    })
 
     socket.on("disconnect_from_socket", (players) => {
       console.log("disconnect_from_socket")
@@ -76,28 +78,30 @@ const Game = () => {
       setGame({ ...game })
     })
 
-    socket.on("played_card", (card) => {
-      //
-      console.log("played_card")
+    socket.on("played_card", (data) => {
+      // update discard pile
+      // setDiscardPile(data.discardPile)
+
+      game.players = data.players
+      setGame({ ...game })
+      // update game.players -> hand
+      console.log("played_card", data.playerId)
     })
 
-    // socket.on("new_deck_size")
-
-
-    // TODO:
-    // game can only be started once, check on server if game has been started before
+    socket.on("get_hands", (data) => {
+      game.hand = data.hand
+      game.players = data.players
+      setGame({ ...game })
+    })
 
     socket.on("game_started", (data) => {
       console.log("game_started", data)
       game.started = data.started
       setGame({ ...game })
-      setDeckSize(data.deckSize)
-      setDiscardPile(data.discardPile)
+      // setDeckSize(data.deckSize)
+      // setDiscardPile(data.discardPile)
 
       socket.on("give_start_hand", (data) => {
-        // get 7 cards
-        // hand = data
-
         game.hand = data.playerHand
         game.players = data.players
         setGame({ ...game })
@@ -129,7 +133,20 @@ const Game = () => {
             <button onClick={() => console.log("Discard Pile: ", discardPile)}>Get Discard Pile:</button>
             <button onClick={() => console.log("State: ", game)}>Get State</button>
             <button onClick={() => handleLeaveGame()}>Leave Game</button>
+            <button onClick={() => handleDrawCard()}>Draw Card</button>
           </Container>
+          <Container>
+            <h2>Deck Size</h2>
+            <h4>{deckSize}</h4>
+          </Container>
+          <Container>
+            <h2>Discard Pile</h2>
+            <h4>{discardPile.size}</h4>
+            <h4>Color: {discardPile.card.color}</h4>
+            <h4>Number: {discardPile.card.number}</h4>
+            <h4>Method: {discardPile.card.method}</h4>
+          </Container>
+
           <Container>
             <h2>Players:</h2>
             {game.players.map((value, index) => (

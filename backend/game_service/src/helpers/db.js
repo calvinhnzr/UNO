@@ -9,6 +9,8 @@ export class Game {
     this.players = []
     this.started = false
     this.deck = new Deck()
+    this.deck.create()
+    this.deck.shuffle()
     this.discardPile = []
   }
 
@@ -34,11 +36,9 @@ class Card {
   }
 }
 
-class Deck {
-  constructor() {
-    this.cards = []
-    this.create()
-    this.shuffle()
+export class Deck {
+  constructor(cards = []) {
+    this.cards = cards
   }
 
   create() {
@@ -79,6 +79,8 @@ class Deck {
     for (let i = 0; i < this.cards.length; i++) {
       this.cards[i].id = i
     }
+
+    this.shuffle()
   }
 
   shuffle() {
