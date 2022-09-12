@@ -8,10 +8,13 @@ const StyledCard = styled.label`
   input {
     display: none;
   }
+  background-color: ${(props) => props.color};
+  color: ${(props) => (props.color === "black" ? "white" : "black")};
 `
 
 const Card = (props) => {
-  return <StyledCard>{props.children}</StyledCard>
+  return <StyledCard color={props.value.color}>{props.children}</StyledCard>
+
 }
 
 export default Card

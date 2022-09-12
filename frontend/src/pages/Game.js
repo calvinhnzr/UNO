@@ -10,21 +10,18 @@ import Container from "../components/styled/Container"
 import RunningGame from "./RunningGame"
 import GameLobby from "./GameLobby"
 
-// const socket = io.connect(`http://localhost:8000`, { query: `token=OlUJn` })
 const socket = io.connect(`http://localhost:8000`)
-// let socket
 
 const Game = () => {
   const navigate = useNavigate()
   const { user, setUser, game, setGame } = useContext(Context)
   const [deckSize, setDeckSize] = useState(0)
   const [discardPile, setDiscardPile] = useState([])
-  const [hand, setHand] = useState([])
 
   function handleLeaveGame() {
     console.log("leave_game")
     socket.emit("leave_game", game.id)
-    setGame({ id: "", joined: false, started: false, players: [""] })
+    setGame({ id: "", joined: false, started: false, players: [], hand: [] })
     navigate("/")
   }
 
@@ -86,6 +83,10 @@ const Game = () => {
 
     // socket.on("new_deck_size")
 
+
+    // TODO:
+    // game can only be started once, check on server if game has been started before
+
     socket.on("game_started", (data) => {
       console.log("game_started", data)
       game.started = data.started
@@ -127,6 +128,7 @@ const Game = () => {
             <button onClick={() => console.log("Hand: ", game.hand)}>Get Hand</button>
             <button onClick={() => console.log("Discard Pile: ", discardPile)}>Get Discard Pile:</button>
             <button onClick={() => console.log("State: ", game)}>Get State</button>
+            <button onClick={() => handleLeaveGame()}>Leave Game</button>
           </Container>
           <Container>
             <h2>Players:</h2>
@@ -141,7 +143,7 @@ const Game = () => {
             <Hand>
               {game.hand.map((value, index) => {
                 return (
-                  <Card key={index}>
+                  <Card key={index} value={value}>
                     <h4>Color: {value.color}</h4>
                     <h4>Number: {value.number}</h4>
                     <h4>Method: {value.method}</h4>
