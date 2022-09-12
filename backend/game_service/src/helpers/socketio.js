@@ -126,7 +126,7 @@ export const startSocketIO = (io) => {
             return socket.decoded_token.id === player.id
           })
 
-          io.to(socketId).emit("give_start_hand", { playerHand: player.hand, players })
+          io.to(socketId).emit("get_hands", { hand: player.hand, players })
         })
       } else {
         console.log("Game not found")
@@ -148,14 +148,18 @@ export const startSocketIO = (io) => {
 
             game.discardPile.push(card)
 
+            // check if the player has won
+            if (player.hand.length === 0) {
+              game.started = false
+              io.to(gameId).emit("game_ended", { started: game.started, winner: player.name })
+              return
+            }
+
             // remove the hand from each player and add the size of the hand instead
             const players = game.players.map((player) => {
               const { hand, ...rest } = player
               return { ...rest, handSize: hand.length }
             })
-
-            // send updated hand to player who played the card
-            io.to(socket.id).emit("get_hands", { hand: player.hand, players })
 
             io.to(gameId).emit("played_card", {
               // card,
@@ -169,6 +173,9 @@ export const startSocketIO = (io) => {
               card: game.discardPile[game.discardPile.length - 1],
               size: game.discardPile.length,
             })
+
+            // send updated hand to player who played the card
+            io.to(socket.id).emit("get_hands", { hand: player.hand, players })
           }
         }
       } else {

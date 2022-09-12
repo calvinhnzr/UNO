@@ -8,12 +8,17 @@ const StyledCard = styled.label`
   input {
     display: none;
   }
+  opacity: ${(props) => (props.playable ? 1 : 0.5)};
   background-color: ${(props) => props.color};
   color: ${(props) => (props.color === "black" ? "white" : "black")};
 `
 
 const Card = (props) => {
-  return <StyledCard color={props.value.color}>{props.children}</StyledCard>
+  return (
+    <StyledCard playable={props.value.isPlayable} color={props.value.color}>
+      {props.children}
+    </StyledCard>
+  )
 }
 
 export default Card

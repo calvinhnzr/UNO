@@ -28,11 +28,13 @@ export class Game {
 }
 
 class Card {
-  constructor(color, number, method) {
+  constructor(color, number, method, value) {
     this.color = color
     this.number = number
     this.method = method
+    this.value = value
     this.id
+    this.isPlayable = false
   }
 }
 
@@ -43,21 +45,22 @@ export class Deck {
 
   create() {
     let colors = ["blue", "red", "yellow", "green"]
-    let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    let numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    let values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     // let methods = ["draw2", "reverse", "skip"]
 
     // create color cards without
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < colors.length; j++) {
         for (let k = 0; k < numbers.length; k++) {
-          this.cards.push(new Card(colors[j], numbers[k], null))
+          this.cards.push(new Card(colors[j], numbers[k], null, values[k]))
         }
       }
     }
 
     // create 0 cards
     for (let i = 0; i < 4; i++) {
-      this.cards.push(new Card(colors[i], 0, null))
+      this.cards.push(new Card(colors[i], "0", null, 0))
     }
 
     // create action cards
