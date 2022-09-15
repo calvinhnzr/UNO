@@ -9,6 +9,7 @@ import cors from "cors"
 import { setNewPlayerToken, ensureTokenIsSet, resetPlayerToken } from "./helpers/waitForToken.js"
 import { players, Player } from "./helpers/db.js"
 import { initRabbit, publishMessage, rabbit, queue } from "./helpers/rabbit.js"
+import { checkForProfanity } from "./helpers/profanity.js"
 
 // socketio
 import { initSocketIO } from "./helpers/socketio.js"
@@ -50,6 +51,14 @@ app.get("/", (req, res) => {
 app.post("/api/player", async (req, res) => {
   const name = req.body.name || "Anonymous"
   let token
+
+  if (name !== "Anonymous") {
+    const profanity = await checkForProfanity(req.body.name)
+
+    if (profanity) {
+      return res.status(400).json({ error: "Name contains profanity" })
+    }
+  }
 
   const player = new Player(name)
 

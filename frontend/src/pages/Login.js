@@ -27,17 +27,21 @@ const Login = () => {
     }
     const data = await fetchPOST(url, body)
 
-    saveToStorage("token", data.token)
-    saveToStorage("name", data.player.name)
-    saveToStorage("id", data.player.id)
+    if (data.error) {
+      alert(data.error)
+    } else {
+      saveToStorage("token", data.token)
+      saveToStorage("name", data.player.name)
+      saveToStorage("id", data.player.id)
 
-    // save info to context
-    user.token = data.token
-    user.name = data.player.name
-    user.id = data.player.id
-    user.auth = true
-    setUser({ ...user })
-    navigate(`/`)
+      // save info to context
+      user.token = data.token
+      user.name = data.player.name
+      user.id = data.player.id
+      user.auth = true
+      setUser({ ...user })
+      navigate(`/`)
+    }
   }
 
   // TODO: Protected Routes
