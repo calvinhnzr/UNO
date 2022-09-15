@@ -53,18 +53,20 @@ const checkCardIfPlayable = (card, discardPileCard) => {
     return true
   }
 
+  if (card.method && discardPileCard.method) {
+    if (card.method === "draw2" && discardPileCard.method === "draw2") {
+      return true
+    }
+    if (card.method === "skip" && discardPileCard.method === "skip") {
+      return true
+    }
+
+    if (card.method === "reverse" && discardPileCard.method === "reverse") {
+      return true
+    }
+  }
+
   // check for special cards
-  if (card.method === "drawTwo" && discardPileCard.method === "drawTwo") {
-    return true
-  }
-
-  if (card.method === "skip" && discardPileCard.method === "skip") {
-    return true
-  }
-
-  if (card.method === "reverse" && discardPileCard.method === "reverse") {
-    return true
-  }
 
   // compare colors
   if (card.color === discardPileCard.color) {

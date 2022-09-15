@@ -95,8 +95,11 @@ const Game = () => {
       setGame({ ...game })
     })
 
+    // update hands
     socket.on("get_hands", (data) => {
-      game.hand = data.hand
+      if (data.hand) {
+        game.hand = data.hand
+      }
       game.players = data.players
       setGame({ ...game })
       console.log("discard_pile", game.discardPile)
@@ -116,12 +119,6 @@ const Game = () => {
       console.log("game_started", data)
       game.started = data.started
       setGame({ ...game })
-
-      // socket.on("give_start_hand", (data) => {
-      //   game.hand = data.playerHand
-      //   game.players = data.players
-      //   setGame({ ...game })
-      // })
     })
 
     socket.on("game_ended", (data) => {
