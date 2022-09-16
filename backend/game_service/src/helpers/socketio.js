@@ -169,7 +169,7 @@ export const startSocketIO = (io) => {
               io.to(gameId).emit("game_ended", { started: game.started, winner: player.name })
 
               // send rabbitmq event to player service to update the player's score
-              publishMessage({ event: "updatePlayerScore", payload: { name: player.name } })
+              publishMessage({ event: "updateWinners", payload: { name: player.name } })
 
               return
             }

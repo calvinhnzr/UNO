@@ -46,7 +46,7 @@ const Login = () => {
   }
 
   useEffect(() => {
-    fetch("http://localhost:8001/api/winner")
+    fetch("http://localhost:8001/api/winners")
       .then((res) => res.json())
       .then((data) => {
         setWinners(data)

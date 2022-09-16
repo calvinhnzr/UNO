@@ -29,7 +29,7 @@ export const consumeMessages = () => {
 
       ack()
       return
-    } else if (message.event === "updatePlayerScore") {
+    } else if (message.event === "updateWinners") {
       console.log("[AMQP] Message received", message)
 
       winners.push(message.payload)
@@ -55,7 +55,7 @@ app.get("/", (req, res) => {
   res.send("player_service")
 })
 
-app.get("/api/winner", (req, res) => {
+app.get("/api/winners", (req, res) => {
   res.send(winners)
 })
 
