@@ -7,7 +7,7 @@ import cors from "cors"
 
 // helpers
 import { setNewPlayerToken, ensureTokenIsSet, resetPlayerToken } from "./helpers/waitForToken.js"
-import { players, Player } from "./helpers/db.js"
+import { players, Player, winners } from "./helpers/db.js"
 import { initRabbit, publishMessage, rabbit, queue } from "./helpers/rabbit.js"
 import { checkForProfanity } from "./helpers/profanity.js"
 
@@ -29,6 +29,13 @@ export const consumeMessages = () => {
 
       ack()
       return
+    } else if (message.event === "updatePlayerScore") {
+      console.log("[AMQP] Message received", message)
+
+      winners.push(message.payload)
+
+      ack()
+      return
     }
     nack()
     return
@@ -46,6 +53,10 @@ app.get("/", (req, res) => {
   publishMessage({ event: "test", payload: { message: "Hello from player_service" } })
 
   res.send("player_service")
+})
+
+app.get("/api/winner", (req, res) => {
+  res.send(winners)
 })
 
 app.post("/api/player", async (req, res) => {

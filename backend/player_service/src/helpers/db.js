@@ -2,6 +2,7 @@ import { customAlphabet } from "nanoid"
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 
 export const players = []
+export const winners = []
 
 export class Player {
   constructor(name) {

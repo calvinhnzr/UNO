@@ -5,6 +5,7 @@ import socketioJwt from "socketio-jwt"
 
 // helpers
 import { games, Deck } from "./db.js"
+import { publishMessage } from "./rabbit.js"
 
 export const initSocketIO = (app) => {
   const httpServer = createServer(app)
@@ -166,6 +167,9 @@ export const startSocketIO = (io) => {
               game.discardPile = []
 
               io.to(gameId).emit("game_ended", { started: game.started, winner: player.name })
+
+              // send rabbitmq event to player service to update the player's score
+              publishMessage({ event: "updatePlayerScore", payload: { name: player.name } })
 
               return
             }

@@ -20,4 +20,5 @@ WORKDIR /usr/src/app/game_service/src
 COPY ./ ./
 
 EXPOSE 8000
+CMD [ "cp", ".env.example", ".env" ]
 CMD [ "npm", "run", "start:dev" ]

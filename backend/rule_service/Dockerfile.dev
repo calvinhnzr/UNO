@@ -20,4 +20,5 @@ WORKDIR /usr/src/app/rule_service/src
 COPY ./ ./
 
 EXPOSE 8002
+CMD [ "cp", ".env.example", ".env" ]
 CMD [ "npm", "run", "start:dev" ]

@@ -19,6 +19,7 @@ const Login = () => {
 
   const [name, setName] = useState("")
   const { user, setUser } = useContext(Context)
+  const [winners, setWinners] = useState([])
 
   async function submitHandler(e) {
     e.preventDefault()
@@ -44,6 +45,14 @@ const Login = () => {
     }
   }
 
+  useEffect(() => {
+    fetch("http://localhost:8001/api/winner")
+      .then((res) => res.json())
+      .then((data) => {
+        setWinners(data)
+      })
+  }, [])
+
   // TODO: Protected Routes
 
   return (
@@ -67,6 +76,13 @@ const Login = () => {
       <Container>
         <button onClick={() => console.log(user)}>Get State</button>
         <button onClick={() => localStorage.clear()}>Clear localStorage</button>
+      </Container>
+
+      <Container>
+        <h2>Latest Winners:</h2>
+        {winners.map((value, index) => (
+          <p>{value.name}</p>
+        ))}
       </Container>
     </Layout>
   )

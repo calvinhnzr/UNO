@@ -20,4 +20,5 @@ WORKDIR /usr/src/app/player_service/src
 COPY ./ ./
 
 EXPOSE 8001
+CMD [ "cp", ".env.example", ".env" ]
 CMD [ "npm", "run", "start:dev" ]

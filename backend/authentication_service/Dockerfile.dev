@@ -20,4 +20,5 @@ WORKDIR /usr/src/app/authentication_service/src
 COPY ./ ./
 
 EXPOSE 8003
+CMD [ "cp", ".env.example", ".env" ]
 CMD [ "npm", "run", "start:dev" ]
