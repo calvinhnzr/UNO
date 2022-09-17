@@ -68,7 +68,7 @@ Damit die Anwendungen lokal entwickelt und getestet werden können, werden diese
 
 ### **Architektur**
 
-[![Product Name Screen Shot][architecture]](#)
+[![Main Screenshot][architecture]](#)
 
 Die Anwendung wurde in vier Backend Services aufgeteilt, welche unabhängige Funktionen übernehmen:
 
@@ -88,6 +88,20 @@ Alle Spieler authentifizieren sich über einen JWT-Token. Diese werden nur vom _
 
 Die einem Spieler zur Verfügung stehen Spielkarten in der eigenen Hand werden vom _rule_service_ überprüft. Ein Spieler kann nach erfolgreicher Überprüfung nur noch Karten spielen, die auch den Regeln nach spielbar wären.
 
+<p align="right">(<a href="#readme-top">Zum Anfang</a>)</p>
+
+### **Domänenmodell**
+
+[![Domaenenmodell][domaenenmodell]](#)
+
+<p align="right">(<a href="#readme-top">Zum Anfang</a>)</p>
+
+### Entitäten
+
+[![Entitaeten][entitaeten]](#)
+
+<p align="right">(<a href="#readme-top">Zum Anfang</a>)</p>
+
 ### **Kommunikation**
 
 Zu Beginn muss sich ein Spieler mit einem gewählten Spielernamen anmelden. Für diesen Aufruf wird eine REST-Schnittstelle auf dem _player_service_ bereitsgestellt. Der _player_service_ leitet den eingegebenen Namen an eine externe API weiter, welche eine einfache Obszönitätskontrolle durchführt. Nach erfolgreicher Überprüfung werden die Daten als asynchrone Nachricht über RabbitMQ als AMQP Broker an den _authentication_service_ weitergeleitet. Dieser generiert einen JWT-Token und schickt anschließend eine AMQP Nachricht über den Broker an den _player_service_. Hervorzuheben ist hierbei, dass jeder der anderen Services die Nachricht ebenfalls empfangen kann, aber nicht auf die Nachrichten reagiert. Dem Spieler wird der eigene JWT-Token zurückgesendet und danach weiter zum eigenen Dashboard weitergeleitet.
@@ -96,34 +110,34 @@ Von dem Dashboard aus kann ein Spieler ein neues Spiel erstellen, oder aber eine
 
 Bei der Verbindung zu einem Spiel stellt das Frontend eine über den JWT-Token authentifizierte Socket.io Verbindung zum _game_service_ sowie zum _rule_service_ her. Durch die auf dem Websocket Protokoll aufbauende Technologie kann eine Echtzeitkommunikation aufgebaut und alle im Spiel auftredenden Interaktionen über Events von den jeweiligen Services verarbeitet werden.
 
-Folgende AMQP und Socket.io Nachrichten werden dabei im gesamten System versendet:
+Folgende **wesentliche AMQP und Socket.io Events** werden dabei im gesamten System versendet:
 
 **AMQP**:
 
-- newPlayer
-- playerToken
-- updateWinners
+- `newPlayer`
+- `playerToken`
+- `updateWinners`
 
 **Socket.io**:
 
-- player_joined
-- player_left
-- deck_size_updated
-- discard_pile_updated
-- disconnect_from_socket
-- played_card
-- get_hands
-- game_started
-- game_ended
-- disconnect
-- start_game
-- draw_card
-- play_card
-- join_game
+- `player_joined`
+- `player_left`
+- `deck_size_updated`
+- `discard_pile_updated`
+- `disconnect_from_socket`
+- `played_card`
+- `get_hands`
+- `game_started`
+- `game_ended`
+- `disconnect`
+- `start_game`
+- `draw_card`
+- `play_card`
+- `join_game`
   <br>
   <br>
-- check_hand
-- checked_hand
+- `check_hand`
+- `checked_hand`
 
 <p align="right">(<a href="#readme-top">Zum Anfang</a>)</p>
 
@@ -226,6 +240,8 @@ Projekt Link: [https://github.com/antonztsv/FDDWSS22_HinzerZaitsev](https://gith
 [license-url]: https://github.com/antonztsv/FDDWSS22_HinzerZaitsev/blob/master/LICENSE.txt
 [product-screenshot]: docs/images/screenshot.png
 [architecture]: docs/images/architecture.png
+[domaenenmodell]: docs/images/domaenenmdodell.png
+[entitaeten]: docs/images/entitaeten.png
 
 <!-- [react.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [react-url]: https://reactjs.org/ -->
