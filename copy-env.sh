@@ -1,5 +1,4 @@
 #!/bin/bash
-# Author: A. Zaitsev
 
 # Copy environment variables from .env.example file to .env file
 
