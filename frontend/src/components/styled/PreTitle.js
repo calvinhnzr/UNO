@@ -1,13 +1,12 @@
 import styled from "styled-components"
 
-const Title = styled.h1`
-  font-size: 4rem;
+const PreTitle = styled.h2`
+  font-size: 1.5rem;
   justify-self: center;
   text-align: center;
-
   text-transform: uppercase;
-  color: white;
+  color: #f45f5f;
   font-weight: bold;
 `
 
-export default Title
+export default PreTitle

@@ -42,7 +42,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Nav gameId={user.gameId} />
+        {/* <Nav gameId={user.gameId} /> */}
         <Context.Provider value={{ user, setUser, game, setGame }}>
           <Routes>
             <Route path="/" element={user.token ? <Dashboard /> : <Login />} />

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 
 import Layout from "../components/styled/Layout"
 import Container from "../components/styled/Container"
+import PreTitle from "../components/styled/PreTitle"
 import Title from "../components/styled/Title"
 import Form from "../components/styled/Form"
 
@@ -57,8 +58,11 @@ const Login = () => {
 
   return (
     <Layout>
-      <Container>
-        <Title>Name: {name}</Title>
+      <Container row="3 / 4">
+        <PreTitle>Login</PreTitle>
+        <Title>Uno</Title>
+      </Container>
+      <Container row="4 / 5" column="5 / 9">
         <Form onSubmit={submitHandler}>
           <label>
             <input
@@ -70,10 +74,10 @@ const Login = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </label>
-          <button type="submit">Login</button>
+          {/* <button type="submit">Go</button> */}
         </Form>
       </Container>
-      <Container>
+      <Container hidden>
         <button onClick={() => console.log(user)}>Get State</button>
         <button onClick={() => localStorage.clear()}>Clear localStorage</button>
       </Container>
