@@ -24,4 +24,5 @@ export const Block = styled.div`
 export const BlockContainer = styled.aside`
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 `

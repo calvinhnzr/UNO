@@ -1,11 +1,5 @@
 <a name="readme-top"></a>
 
-<!-- [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url] -->
-
-<!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <a href="https://github.com/antonztsv/FDDWSS22_HinzerZaitsev">
@@ -15,7 +9,7 @@
 <h3 align="center"><strong>UNO Kartenspiel</strong></h3>
 
   <p align="center">
-    Projekt im Modul Frameworks, Dienste und Daten im Web
+    Projekt im Modul Frameworks, Dienste und Daten im Web im SS2022
     <br />
     <br />
     <p><strong>Calvin Hinzer</strong> - <a href="mailto:calvin.hinzer@smail.th-koeln.de ">calvin.hinzer@smail.th-koeln.de </a></p>
@@ -24,11 +18,9 @@
   </p>
 </div>
 
-<!-- ABOUT THE PROJECT -->
-
 ## **Über das Projekt**
 
-[![Product Name Screen Shot][product-screenshot]](#)
+[![Uno Kartenspiel][lobby-screen]](#)
 
 Für das Modul Frameworks, Dienste und Daten im Web wurde als Projekt das Kartenspiel UNO in vereinfachter Form entwickelt und umgesetzt.
 Dabei wurde der Fokus auf eine in Microservices aufgeteilte ereignisgesteuerte Architektur gelegt.
@@ -58,7 +50,7 @@ Gewonnen hat der Spieler, der alle Karten als erstes abgelegt hat.
 
 Die einzelnen Microservices im Backend wurden mit dem serverseitigem [Javascript Framework Node.js](https://nodejs.org/en/) umgesetzt. Dieses ermöglicht, vor allem durch die Einbindung von [externen NPM-Packages](https://www.npmjs.com/), eine schnelle und unkomplizierte Implementierung von Funktionalitäten. Die Kommunikaton zwischen den Services erfolgt durch die Anbindung eines RabbitMQ Brokers, wodurch ein asynchroner Austausch von Nachrichten, auch im Falle eines Serviceausfalls, stattfinden kann.
 
-Für das Frontend wurde die [Javascript-Library React](https://reactjs.org/) verwendet. **Beschreibung wieso??**
+Da das Team bereits Erfahrung mit dem Umgang des Frameworks `create-react-app` hatte, wurde entschieden die [Javascript-Library React](https://reactjs.org/) für das Frontend zu verwenden. Dabei war es wichtig schnell und einfach wiederverwendbare UI Komponenten zu erstellen und einzusetzen.
 
 Der Austausch von Spieldaten zwischen dem Frontend und den jeweiligen Services wird über die [Socket.io Bibliothek](https://socket.io/) realisiert. Diese baut auf dem Websocket Protokoll auf und bietet erweiterte Funktionen, wie z.B. eine garantierte Fallback-Lösung auf HTTP-Polling oder eine automatische Reconnect-Funktion.
 
@@ -196,10 +188,22 @@ Das Frontend kann über [`http://localhost:3000`](http://localhost:3000) aufgeru
 ### **Ablauf**
 
 1. Eingabe Spielername
+
+[![Uno Kartenspiel][login-screen]](#)
+
 2. Erstellung eines neuen Spiels
+
+[![Uno Kartenspiel][dashboard-screen]](#)
+
 3. Beitritt des Spiels über einen anderen Browser (oder über Inkognito im gleichen Browser) über die gameId
 4. Spiel starten
+
+[![Uno Kartenspiel][lobby-screen]](#)
+
 5. Spiel spielen
+
+[![Uno Kartenspiel][game-screen]](#)
+
 6. Spiel beenden
 
 <p align="right">(<a href="#readme-top">Zum Anfang</a>)</p>
@@ -215,18 +219,7 @@ Projekt Link: [https://github.com/antonztsv/FDDWSS22_HinzerZaitsev](https://gith
 
 <p align="right">(<a href="#readme-top">Zum Anfang</a>)</p>
 
-<!-- ACKNOWLEDGMENTS -->
-
-<!-- ## Acknowledgments
-
-- []()
-- []()
-- []() -->
-
 <!-- <p align="right">(<a href="#readme-top">An den Anfang</a>)</p> -->
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/antonztsv/FDDWSS22_HinzerZaitsev.svg?style=for-the-badge
 [contributors-url]: https://github.com/antonztsv/FDDWSS22_HinzerZaitsev/graphs/contributors
@@ -242,9 +235,7 @@ Projekt Link: [https://github.com/antonztsv/FDDWSS22_HinzerZaitsev](https://gith
 [architecture]: docs/images/architecture.png
 [domaenenmodell]: docs/images/domaenenmdodell.png
 [entitaeten]: docs/images/entitaeten.png
-
-<!-- [react.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[react-url]: https://reactjs.org/ -->
-
-<!-- [node.js]: https://img.shields.io/npm/v/nodejs.svg?logo=nodedotjs
-[node-url]: https://nodejs.org/ -->
+[login-screen]: docs/images/01-login-screen.png
+[dashboard-screen]: docs/images/02-dashborard-screen.png
+[lobby-screen]: docs/images/03-lobby-screen.png
+[game-screen]: docs/images/04-game-screen.png

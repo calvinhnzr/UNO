@@ -49,8 +49,11 @@ const Game = () => {
   }
 
   function handleStartGame() {
-    console.log("start_game")
-    socket.emit("start_game", game.id)
+    // game can only be started when at least two playes are in lobby
+    if (game.players.length > 1) {
+      console.log("start_game")
+      socket.emit("start_game", game.id)
+    }
   }
 
   function handleDrawCard() {
@@ -119,7 +122,6 @@ const Game = () => {
       game.players = data.players
       setGame({ ...game })
       console.log("discard_pile", game.discardPile)
-
       ruleSocket.emit("check_hand", { hand: game.hand, discardPileCard: game.discardPile })
     })
 

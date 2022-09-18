@@ -8,7 +8,6 @@ import Title from "../components/styled/Title"
 import Form from "../components/styled/Form"
 import Input from "../components/styled/Input"
 import Button from "../components/styled/Button"
-import { Block, BlockContainer } from "../components/styled/Block"
 
 import { saveToStorage } from "../helpers/saveToStorage"
 
@@ -23,7 +22,6 @@ const Login = () => {
 
   const [name, setName] = useState("")
   const { user, setUser } = useContext(Context)
-  const [winners, setWinners] = useState([])
 
   async function submitHandler(e) {
     e.preventDefault()
@@ -48,16 +46,6 @@ const Login = () => {
       navigate(`/`)
     }
   }
-
-  useEffect(() => {
-    fetch("http://localhost:8001/api/winners")
-      .then((res) => res.json())
-      .then((data) => {
-        setWinners(data)
-      })
-  }, [])
-
-  // TODO: Protected Routes
 
   return (
     <Layout>
@@ -85,15 +73,6 @@ const Login = () => {
       <Container hidden>
         <button onClick={() => console.log(user)}>Get State</button>
         <button onClick={() => localStorage.clear()}>Clear localStorage</button>
-      </Container>
-
-      <Container>
-        <h3>Latest Winners</h3>
-        <BlockContainer>
-          {winners.map((value, index) => (
-            <Block key={index}>{value.name}</Block>
-          ))}
-        </BlockContainer>
       </Container>
     </Layout>
   )
