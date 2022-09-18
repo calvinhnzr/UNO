@@ -1,12 +1,12 @@
 import styled from "styled-components"
 
 const Form = styled.form`
-  grid-column: 5 / 8;
-  /* display: flex;
-  flex-direction: column; */
+  /* grid-column: 5 / 8; */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
   label {
-    max-width: 20rem;
-    margin: 0 auto;
     input {
       background: none;
       border: none;

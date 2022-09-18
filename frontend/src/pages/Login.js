@@ -2,10 +2,13 @@ import { useState, useEffect, useContext } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 
 import Layout from "../components/styled/Layout"
-import Container from "../components/styled/Container"
+import { Container } from "../components/styled/Container"
 import PreTitle from "../components/styled/PreTitle"
 import Title from "../components/styled/Title"
 import Form from "../components/styled/Form"
+import Input from "../components/styled/Input"
+import Button from "../components/styled/Button"
+import { Block, BlockContainer } from "../components/styled/Block"
 
 import { saveToStorage } from "../helpers/saveToStorage"
 
@@ -58,14 +61,14 @@ const Login = () => {
 
   return (
     <Layout>
-      <Container row="3 / 4">
+      <Container>
         <PreTitle>Login</PreTitle>
         <Title>Uno</Title>
       </Container>
-      <Container row="4 / 5" column="5 / 9">
+      <Container>
         <Form onSubmit={submitHandler}>
           <label>
-            <input
+            <Input
               type="text"
               required
               name={`Username`}
@@ -74,7 +77,9 @@ const Login = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </label>
-          {/* <button type="submit">Go</button> */}
+          <Button type="submit" bgColor="#D9D9D9">
+            Go
+          </Button>
         </Form>
       </Container>
       <Container hidden>
@@ -83,10 +88,12 @@ const Login = () => {
       </Container>
 
       <Container>
-        <h2>Latest Winners:</h2>
-        {winners.map((value, index) => (
-          <p>{value.name}</p>
-        ))}
+        <h3>Latest Winners</h3>
+        <BlockContainer>
+          {winners.map((value, index) => (
+            <Block key={index}>{value.name}</Block>
+          ))}
+        </BlockContainer>
       </Container>
     </Layout>
   )

@@ -3,7 +3,9 @@ import styled from "styled-components"
 const Hand = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 1rem;
+  flex: 1 1 auto;
 `
 
 export default Hand

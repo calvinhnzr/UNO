@@ -1,22 +1,38 @@
-import { useState, useEffect, useContext } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useState, useEffect, useContext, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { Context } from "../context/Context"
 import io from "socket.io-client"
+import { BiCopy } from "react-icons/bi"
 
 import Card from "../components/Card"
 import Hand from "../components/styled/Hand"
-import Layout from "../components/styled/Layout"
-import Container from "../components/styled/Container"
+import { Container, HandContainer, DeckContainer, PlayerContainer } from "../components/styled/Container"
 import RunningGame from "./RunningGame"
 import GameLobby from "./GameLobby"
+import Title from "../components/styled/Title"
+import PreTitle from "../components/styled/PreTitle"
+import Button from "../components/styled/Button"
+import { Block, BlockContainer } from "../components/styled/Block"
+import { UnoCard, UnoCardBlock } from "../components/styled/UnoCard"
 
 const socket = io.connect(`http://localhost:8000`)
 const ruleSocket = io.connect(`http://localhost:8002`)
 
 const Game = () => {
+  const iconRef = useRef(null)
+
   const navigate = useNavigate()
   const { user, setUser, game, setGame } = useContext(Context)
   const [deckSize, setDeckSize] = useState(0)
+
+  function handleCopyClipboard() {
+    navigator.clipboard.writeText(game.id)
+    const svg = iconRef.current.children[0]
+    svg.style.color = "#71CE69"
+    setTimeout(function () {
+      svg.style.color = "rgba(255, 255, 255, 0.2)"
+    }, 300)
+  }
 
   function handleLeaveGame() {
     console.log("leave_game")
@@ -154,66 +170,82 @@ const Game = () => {
     <>
       {game.started ? (
         <RunningGame>
-          <Container>
-            <h1>Running Game</h1>
-            <button onClick={() => console.log("Deck: ", deckSize)}>Get Deck</button>
-            <button onClick={() => console.log("Hand: ", game.hand)}>Get Hand</button>
-            <button onClick={() => console.log("Discard Pile: ", game.discardPile)}>Get Discard Pile:</button>
-            <button onClick={() => console.log("State: ", game)}>Get State</button>
-            <button onClick={() => handleLeaveGame()}>Leave Game</button>
-            <button onClick={() => handleDrawCard()}>Draw Card</button>
-          </Container>
-          <Container>
-            <h2>Deck Size</h2>
-            <h4>{deckSize}</h4>
-          </Container>
-          <Container>
-            <h2>Discard Pile</h2>
-            <h4>{game.discardPile.size}</h4>
-            <h4>Color: {game.discardPile.card.color}</h4>
-            <h4>Number: {game.discardPile.card.number}</h4>
-            <h4>Method: {game.discardPile.card.method}</h4>
-          </Container>
-
-          <Container>
-            <h2>Players:</h2>
-            {game.players.map((value, index) => (
-              <div key={index}>
+          <PlayerContainer>
+            {/* {game.players.map((value, index) => (
+              <div className="singlePlayer">
+                <div className="singleBlocks">{Array(value.handSize).fill(<UnoCardBlock />)}</div>
                 <h5>{value.name}</h5>
-                <p>{value.handSize}</p>
+               
               </div>
-            ))}
-          </Container>
-          <Container>
+            ))} */}
+            {game.players.map((value) => {
+              return value.id === user.id ? (
+                ""
+              ) : (
+                <div className="singlePlayer">
+                  <div className="singleBlocks">{Array(value.handSize).fill(<UnoCardBlock />)}</div>
+                  <h5>{value.name}</h5>
+                </div>
+              )
+            })}
+          </PlayerContainer>
+
+          <DeckContainer>
+            <UnoCard playable="true" amount={deckSize}>
+              <input type="button" onClick={() => handleDrawCard()} />
+            </UnoCard>
+
+            <UnoCard className={game.discardPile.card.color} playable="true" amount={game.discardPile.size}>
+              <h4>{game.discardPile.card.number ? game.discardPile.card.number : game.discardPile.card.method}</h4>
+            </UnoCard>
+          </DeckContainer>
+
+          <HandContainer>
+            {/* <h3>Hand</h3> */}
             <Hand>
               {game.hand.map((value, index) => {
                 return (
-                  <Card key={index} value={value}>
-                    <h4>Color: {value.color}</h4>
-                    <h4>Number: {value.number}</h4>
-                    <h4>Method: {value.method}</h4>
+                  <UnoCard key={value.id} className={value.color} playable={value.isPlayable}>
+                    <h4>{value.number ? value.number : value.method}</h4>
                     <input type="button" onClick={() => (value.isPlayable ? handlePlayCard(value) : null)} />
-                  </Card>
+                  </UnoCard>
                 )
               })}
             </Hand>
+          </HandContainer>
+
+          <Container hidden>
+            <button onClick={() => handleLeaveGame()}>Leave Game</button>
           </Container>
         </RunningGame>
       ) : (
         <GameLobby>
           <Container>
-            <h1>My Game: {game.id}</h1>
-            <h2>Me: {user.name}</h2>
+            <PreTitle>Lobby</PreTitle>
+            <Title>Uno</Title>
           </Container>
           <Container>
-            <button onClick={handleStartGame}>Start Game</button>
-            <button onClick={handleLeaveGame}>Leave Game</button>
+            <h3>Game Id</h3>
+            <BlockContainer>
+              <Block onClick={() => handleCopyClipboard()} ref={iconRef}>
+                {game.id} <BiCopy />
+              </Block>
+            </BlockContainer>
+          </Container>
+
+          <Container>
+            <Button onClick={handleStartGame} bgColor="#D9D9D9">
+              Start Game
+            </Button>
+            <Button onClick={handleLeaveGame}>Leave Game</Button>
           </Container>
           <Container>
-            <h2>Players:</h2>
-            {game.players.map((value, index) => (
-              <p key={index}>{value.name}</p>
-            ))}
+            <h3>Players</h3>
+            <BlockContainer>
+              {game.players.map((value, index) => (
+                <Block key={index}>{value.name}</Block>
+              ))}
+            </BlockContainer>
           </Container>
         </GameLobby>
       )}
