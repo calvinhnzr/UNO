@@ -207,9 +207,19 @@ const Game = () => {
             <Hand>
               {game.hand.map((value, index) => {
                 return (
-                  <UnoCard key={value.id} className={value.color} playable={value.isPlayable}>
+                  <UnoCard
+                    key={value.id}
+                    className={value.color}
+                    playable={ruleSocket.connected ? value.isPlayable : true}
+                  >
                     <h4>{value.number ? value.number : value.method}</h4>
-                    <input type="button" onClick={() => (value.isPlayable ? handlePlayCard(value) : null)} />
+                    {/* <input type="button" onClick={() => (value.isPlayable ? handlePlayCard(value) : null)} /> */}
+                    <input
+                      type="button"
+                      onClick={() =>
+                        ruleSocket.connected ? (value.isPlayable ? handlePlayCard(value) : null) : handlePlayCard(value)
+                      }
+                    />
                   </UnoCard>
                 )
               })}
